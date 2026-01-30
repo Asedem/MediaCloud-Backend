@@ -24,6 +24,12 @@ public class Image {
 
     public Image() {}
 
+    public Image(Integer id, String title, String filePath) {
+        this.id = id;
+        this.title = title;
+        this.filePath = filePath;
+    }
+
     public Image(String title, String filePath) {
         this.title = title;
         this.filePath = filePath;
