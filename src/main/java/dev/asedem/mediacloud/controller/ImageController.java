@@ -1,7 +1,5 @@
 package dev.asedem.mediacloud.controller;
 
-import dev.asedem.mediacloud.database.entity.Image;
-import dev.asedem.mediacloud.database.repository.ImageRepository;
 import dev.asedem.mediacloud.model.ImageDTO;
 import dev.asedem.mediacloud.service.ImageService;
 
