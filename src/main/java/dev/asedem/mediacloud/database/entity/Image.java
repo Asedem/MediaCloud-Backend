@@ -19,20 +19,25 @@ public class Image {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "file_path", nullable = false)
-    private String filePath;
+    @Column(name = "upload_path", nullable = false)
+    private String uploadPath;
+
+    @Column(name = "thumbnail_path", nullable = false)
+    private String thumbnailPath;
 
     public Image() {}
 
-    public Image(Integer id, String title, String filePath) {
+    public Image(Integer id, String title, String uploadPath, String thumbnailPath) {
         this.id = id;
         this.title = title;
-        this.filePath = filePath;
+        this.uploadPath = uploadPath;
+        this.thumbnailPath = thumbnailPath;
     }
 
-    public Image(String title, String filePath) {
+    public Image(String title, String uploadPath, String thumbnailPath) {
         this.title = title;
-        this.filePath = filePath;
+        this.uploadPath = uploadPath;
+        this.thumbnailPath = thumbnailPath;
     }
 
     public Integer getId() {
@@ -51,11 +56,19 @@ public class Image {
         this.title = title;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getUploadPath() {
+        return uploadPath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setUploadPath(String uploadPath) {
+        this.uploadPath = uploadPath;
+    }
+
+    public String getThumbnailPath() {
+        return thumbnailPath;
+    }
+
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
     }
 }

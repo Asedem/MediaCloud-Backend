@@ -34,6 +34,11 @@ public class ImageController {
             .toList());
     }
 
+    @GetMapping(value = "/{id}/preview", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getThumbnailData(@PathVariable Integer id) throws Exception {
+        return ResponseEntity.ok(this.imageService.getThumbnailData(id));
+    }
+
     @GetMapping(value = "/{id}/raw", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getImageData(@PathVariable Integer id) throws Exception {
         return ResponseEntity.ok(this.imageService.getImageData(id));

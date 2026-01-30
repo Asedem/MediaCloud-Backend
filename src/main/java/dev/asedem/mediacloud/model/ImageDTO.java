@@ -5,14 +5,16 @@ import dev.asedem.mediacloud.database.entity.Image;
 public record ImageDTO(
     Integer id,
     String title,
-    String filePath
+    String uploadPath,
+    String thumbnailPath
 ) {
 
     public ImageDTO(Image image) {
         this(
             image.getId(),
             image.getTitle(),
-            image.getFilePath()
+            image.getUploadPath(),
+            image.getThumbnailPath()
         );
     }
 
@@ -20,7 +22,8 @@ public record ImageDTO(
         return new Image(
             this.id,
             this.title,
-            this.filePath
+            this.uploadPath,
+            this.thumbnailPath
         );
     }
 }
