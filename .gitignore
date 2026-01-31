@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### MacOS ###
+.DS_Store
+
 ### MediaCloud ###
 stored_images/
 stored_thumbnails/

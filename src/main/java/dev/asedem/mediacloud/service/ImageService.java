@@ -82,7 +82,7 @@ public class ImageService {
         
         int width = img.getWidth();
         int height = img.getHeight();
-        double scale = Math.min(300.0 / width, 300.0 / height);
+        double scale = Math.min(350.0 / width, 350.0 / height);
         if (scale > 1.0) scale = 1.0;
 
         int targetWidth = (int) (width * scale);
