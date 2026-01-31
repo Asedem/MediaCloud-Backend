@@ -3,6 +3,7 @@ package dev.asedem.mediacloud.service;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -64,6 +65,18 @@ public class ImageService {
         
         String fileName = new File(image.getUploadPath()).getName();
         return this.loadDecryptedFile(THUMB_DIR + fileName);
+    }
+
+    public void deleteImage(Integer id) {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+        try {
+            Files.deleteIfExists(Paths.get(image.getUploadPath()));
+            Files.deleteIfExists(Paths.get(image.getThumbnailPath()));
+            this.imageRepository.delete(image);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not delete physical files", e);
+        }
     }
 
     private String saveEncryptedFile(byte[] data, String directory, String uuid) throws Exception {

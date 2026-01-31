@@ -43,4 +43,10 @@ public class ImageController {
     public ResponseEntity<byte[]> getImageData(@PathVariable Integer id) throws Exception {
         return ResponseEntity.ok(this.imageService.getImageData(id));
     }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> deleteImage(@PathVariable Integer id) {
+        this.imageService.deleteImage(id);
+        return ResponseEntity.noContent().build();
+    }
 }
