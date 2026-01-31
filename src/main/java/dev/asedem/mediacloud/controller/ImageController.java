@@ -13,40 +13,40 @@ import java.util.List;
 @RequestMapping("/api/images")
 public class ImageController {
 
-	private final ImageService imageService;
+    private final ImageService imageService;
 
-	public ImageController(ImageService imageService) {
-		this.imageService = imageService;
-	}
+    public ImageController(ImageService imageService) {
+        this.imageService = imageService;
+    }
 
-	@PostMapping("/upload")
-	public ResponseEntity<ImageDTO> uploadImage(@RequestParam String title,
-			@RequestParam MultipartFile file) throws Exception {
-		return ResponseEntity.ok(new ImageDTO(this.imageService.uploadImage(title, file)));
-	}
+    @PostMapping("/upload")
+    public ResponseEntity<ImageDTO> uploadImage(@RequestParam String title,
+            @RequestParam MultipartFile file) throws Exception {
+        return ResponseEntity.ok(new ImageDTO(this.imageService.uploadImage(title, file)));
+    }
 
-	@GetMapping
-	public ResponseEntity<List<ImageDTO>> getAllImages() {
-		return ResponseEntity.ok(this.imageService
-				.getAllImages()
-				.stream()
-				.map(ImageDTO::new)
-				.toList());
-	}
+    @GetMapping
+    public ResponseEntity<List<ImageDTO>> getAllImages() {
+        return ResponseEntity.ok(this.imageService
+                .getAllImages()
+                .stream()
+                .map(ImageDTO::new)
+                .toList());
+    }
 
-	@GetMapping(value = "/{id}/preview", produces = MediaType.IMAGE_JPEG_VALUE)
-	public ResponseEntity<byte[]> getThumbnailData(@PathVariable Integer id) throws Exception {
-		return ResponseEntity.ok(this.imageService.getThumbnailData(id));
-	}
+    @GetMapping(value = "/{id}/preview", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getThumbnailData(@PathVariable Integer id) throws Exception {
+        return ResponseEntity.ok(this.imageService.getThumbnailData(id));
+    }
 
-	@GetMapping(value = "/{id}/raw", produces = MediaType.IMAGE_JPEG_VALUE)
-	public ResponseEntity<byte[]> getImageData(@PathVariable Integer id) throws Exception {
-		return ResponseEntity.ok(this.imageService.getImageData(id));
-	}
+    @GetMapping(value = "/{id}/raw", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImageData(@PathVariable Integer id) throws Exception {
+        return ResponseEntity.ok(this.imageService.getImageData(id));
+    }
 
-	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> deleteImage(@PathVariable Integer id) {
-		this.imageService.deleteImage(id);
-		return ResponseEntity.noContent().build();
-	}
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> deleteImage(@PathVariable Integer id) {
+        this.imageService.deleteImage(id);
+        return ResponseEntity.noContent().build();
+    }
 }
