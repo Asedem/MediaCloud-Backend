@@ -24,102 +24,103 @@ import dev.asedem.mediacloud.database.repository.ImageRepository;
 
 @Service
 public class ImageService {
-    
-    private static final String UPLOAD_DIR = "./stored_images/";
-    private static final String THUMB_DIR = "./stored_thumbnails/";
-    private static final String ALGORITHM = "AES";
-    private static final String KEY = "e8519eb540c73be13b8d91439089f6c152ecf23f477cbd1dd4a5c4a838e37188"; 
 
-    private final ImageRepository imageRepository;
+	private static final String UPLOAD_DIR = "./stored_images/";
+	private static final String THUMB_DIR = "./stored_thumbnails/";
+	private static final String ALGORITHM = "AES";
+	private static final String KEY = "e8519eb540c73be13b8d91439089f6c152ecf23f477cbd1dd4a5c4a838e37188";
 
-    public ImageService(ImageRepository imageRepository) {
-        new File(UPLOAD_DIR).mkdirs();
-        new File(THUMB_DIR).mkdirs();
-        this.imageRepository = imageRepository;
-    }
+	private final ImageRepository imageRepository;
 
-    public Image uploadImage(String title, MultipartFile file) throws Exception {
-        String uuid = UUID.randomUUID().toString();
-        byte[] fileBytes = file.getBytes();
-        
-        String uploadPath = this.saveEncryptedFile(fileBytes, UPLOAD_DIR, uuid);
-        String thumbnailPath = this.saveEncryptedThumbnail(fileBytes, uuid);
+	public ImageService(ImageRepository imageRepository) {
+		new File(UPLOAD_DIR).mkdirs();
+		new File(THUMB_DIR).mkdirs();
+		this.imageRepository = imageRepository;
+	}
 
-        Image image = new Image(title, uploadPath, thumbnailPath);
-        return this.imageRepository.save(image);
-    }
+	public Image uploadImage(String title, MultipartFile file) throws Exception {
+		String uuid = UUID.randomUUID().toString();
+		byte[] fileBytes = file.getBytes();
 
-    public List<Image> getAllImages() {
-        return this.imageRepository.findAll();
-    }
+		String uploadPath = this.saveEncryptedFile(fileBytes, UPLOAD_DIR, uuid);
+		String thumbnailPath = this.saveEncryptedThumbnail(fileBytes, uuid);
 
-    public byte[] getImageData(Integer id) throws Exception {
-        Image image = imageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
-        return this.loadDecryptedFile(image.getUploadPath());
-    }
+		Image image = new Image(title, uploadPath, thumbnailPath);
+		return this.imageRepository.save(image);
+	}
 
-    public byte[] getThumbnailData(Integer id) throws Exception {
-        Image image = imageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
-        
-        String fileName = new File(image.getUploadPath()).getName();
-        return this.loadDecryptedFile(THUMB_DIR + fileName);
-    }
+	public List<Image> getAllImages() {
+		return this.imageRepository.findAll();
+	}
 
-    public void deleteImage(Integer id) {
-        Image image = imageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
-        try {
-            Files.deleteIfExists(Paths.get(image.getUploadPath()));
-            Files.deleteIfExists(Paths.get(image.getThumbnailPath()));
-            this.imageRepository.delete(image);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not delete physical files", e);
-        }
-    }
+	public byte[] getImageData(Integer id) throws Exception {
+		Image image = imageRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Image not found"));
+		return this.loadDecryptedFile(image.getUploadPath());
+	}
 
-    private String saveEncryptedFile(byte[] data, String directory, String uuid) throws Exception {
-        String fullPath = directory + uuid + ".enc";
-        SecretKeySpec secretKey = new SecretKeySpec(KEY.substring(0, 16).getBytes(), ALGORITHM);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+	public byte[] getThumbnailData(Integer id) throws Exception {
+		Image image = imageRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Image not found"));
 
-        byte[] encryptedBytes = cipher.doFinal(data);
-        Files.write(Paths.get(fullPath), encryptedBytes);
-        return fullPath;
-    }
+		String fileName = new File(image.getUploadPath()).getName();
+		return this.loadDecryptedFile(THUMB_DIR + fileName);
+	}
 
-    private String saveEncryptedThumbnail(byte[] originalData, String uuid) throws Exception {
-        BufferedImage img = ImageIO.read(new ByteArrayInputStream(originalData));
-        
-        int width = img.getWidth();
-        int height = img.getHeight();
-        double scale = Math.min(350.0 / width, 350.0 / height);
-        if (scale > 1.0) scale = 1.0;
+	public void deleteImage(Integer id) {
+		Image image = imageRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Image not found"));
+		try {
+			Files.deleteIfExists(Paths.get(image.getUploadPath()));
+			Files.deleteIfExists(Paths.get(image.getThumbnailPath()));
+			this.imageRepository.delete(image);
+		} catch (IOException e) {
+			throw new RuntimeException("Could not delete physical files", e);
+		}
+	}
 
-        int targetWidth = (int) (width * scale);
-        int targetHeight = (int) (height * scale);
+	private String saveEncryptedFile(byte[] data, String directory, String uuid) throws Exception {
+		String fullPath = directory + uuid + ".enc";
+		SecretKeySpec secretKey = new SecretKeySpec(KEY.substring(0, 16).getBytes(), ALGORITHM);
+		Cipher cipher = Cipher.getInstance(ALGORITHM);
+		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-        BufferedImage thumb = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = thumb.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(img, 0, 0, targetWidth, targetHeight, null);
-        g.dispose();
+		byte[] encryptedBytes = cipher.doFinal(data);
+		Files.write(Paths.get(fullPath), encryptedBytes);
+		return fullPath;
+	}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(thumb, "jpg", baos);
-        
-        return saveEncryptedFile(baos.toByteArray(), THUMB_DIR, uuid);
-    }
+	private String saveEncryptedThumbnail(byte[] originalData, String uuid) throws Exception {
+		BufferedImage img = ImageIO.read(new ByteArrayInputStream(originalData));
 
-    private byte[] loadDecryptedFile(String path) throws Exception {
-        byte[] encryptedBytes = Files.readAllBytes(Paths.get(path));
+		int width = img.getWidth();
+		int height = img.getHeight();
+		double scale = Math.min(350.0 / width, 350.0 / height);
+		if (scale > 1.0)
+			scale = 1.0;
 
-        SecretKeySpec secretKey = new SecretKeySpec(KEY.substring(0, 16).getBytes(), ALGORITHM);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+		int targetWidth = (int) (width * scale);
+		int targetHeight = (int) (height * scale);
 
-        return cipher.doFinal(encryptedBytes);
-    }
+		BufferedImage thumb = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = thumb.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(img, 0, 0, targetWidth, targetHeight, null);
+		g.dispose();
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(thumb, "jpg", baos);
+
+		return saveEncryptedFile(baos.toByteArray(), THUMB_DIR, uuid);
+	}
+
+	private byte[] loadDecryptedFile(String path) throws Exception {
+		byte[] encryptedBytes = Files.readAllBytes(Paths.get(path));
+
+		SecretKeySpec secretKey = new SecretKeySpec(KEY.substring(0, 16).getBytes(), ALGORITHM);
+		Cipher cipher = Cipher.getInstance(ALGORITHM);
+		cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+		return cipher.doFinal(encryptedBytes);
+	}
 }

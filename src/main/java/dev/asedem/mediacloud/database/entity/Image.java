@@ -11,64 +11,65 @@ import jakarta.persistence.GenerationType;
 @Table(name = "Images")
 public class Image {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
-    private Integer id;
-    
-    @Column(name = "title", nullable = false)
-    private String title;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	private Integer id;
 
-    @Column(name = "upload_path", nullable = false)
-    private String uploadPath;
+	@Column(name = "title", nullable = false)
+	private String title;
 
-    @Column(name = "thumbnail_path", nullable = false)
-    private String thumbnailPath;
+	@Column(name = "upload_path", nullable = false)
+	private String uploadPath;
 
-    public Image() {}
+	@Column(name = "thumbnail_path", nullable = false)
+	private String thumbnailPath;
 
-    public Image(Integer id, String title, String uploadPath, String thumbnailPath) {
-        this.id = id;
-        this.title = title;
-        this.uploadPath = uploadPath;
-        this.thumbnailPath = thumbnailPath;
-    }
+	public Image() {
+	}
 
-    public Image(String title, String uploadPath, String thumbnailPath) {
-        this.title = title;
-        this.uploadPath = uploadPath;
-        this.thumbnailPath = thumbnailPath;
-    }
+	public Image(Integer id, String title, String uploadPath, String thumbnailPath) {
+		this.id = id;
+		this.title = title;
+		this.uploadPath = uploadPath;
+		this.thumbnailPath = thumbnailPath;
+	}
 
-    public Integer getId() {
-        return id;
-    }
+	public Image(String title, String uploadPath, String thumbnailPath) {
+		this.title = title;
+		this.uploadPath = uploadPath;
+		this.thumbnailPath = thumbnailPath;
+	}
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+	public Integer getId() {
+		return id;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public String getUploadPath() {
-        return uploadPath;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public void setUploadPath(String uploadPath) {
-        this.uploadPath = uploadPath;
-    }
+	public String getUploadPath() {
+		return uploadPath;
+	}
 
-    public String getThumbnailPath() {
-        return thumbnailPath;
-    }
+	public void setUploadPath(String uploadPath) {
+		this.uploadPath = uploadPath;
+	}
 
-    public void setThumbnailPath(String thumbnailPath) {
-        this.thumbnailPath = thumbnailPath;
-    }
+	public String getThumbnailPath() {
+		return thumbnailPath;
+	}
+
+	public void setThumbnailPath(String thumbnailPath) {
+		this.thumbnailPath = thumbnailPath;
+	}
 }
