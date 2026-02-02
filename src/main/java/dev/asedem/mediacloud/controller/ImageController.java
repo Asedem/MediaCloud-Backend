@@ -2,6 +2,7 @@ package dev.asedem.mediacloud.controller;
 
 import dev.asedem.mediacloud.model.ImageDTO;
 import dev.asedem.mediacloud.service.ImageService;
+import lombok.AllArgsConstructor;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/images")
+@AllArgsConstructor
 public class ImageController {
 
     private final ImageService imageService;
-
-    public ImageController(ImageService imageService) {
-        this.imageService = imageService;
-    }
 
     @PostMapping("/upload")
     public ResponseEntity<ImageDTO> uploadImage(@RequestParam String title,
@@ -48,5 +46,10 @@ public class ImageController {
     public ResponseEntity<Void> deleteImage(@PathVariable Integer id) {
         this.imageService.deleteImage(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/tags")
+    public ResponseEntity<ImageDTO> addTagsToImage(@PathVariable Integer id, @RequestBody List<Integer> tagIds) {
+        return ResponseEntity.ok(new ImageDTO(this.imageService.addTags(id, tagIds)));
     }
 }

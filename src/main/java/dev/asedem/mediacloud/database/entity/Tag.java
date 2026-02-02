@@ -1,6 +1,9 @@
 package dev.asedem.mediacloud.database.entity;
 
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,11 +12,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "Tags")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Tag {
 
     @Id
@@ -35,8 +45,9 @@ public class Tag {
     @JsonBackReference
     private TagCategory category;
 
-    public Tag() {
-    }
+    @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
+    private Set<Image> images;
 
     public Tag(Integer id, String title, String description, String color, TagCategory category) {
         this.id = id;
@@ -50,45 +61,5 @@ public class Tag {
         this.title = title;
         this.description = description;
         this.color = color;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    public TagCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(TagCategory category) {
-        this.category = category;
     }
 }

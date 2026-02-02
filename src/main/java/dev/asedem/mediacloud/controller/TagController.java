@@ -3,6 +3,8 @@ package dev.asedem.mediacloud.controller;
 import dev.asedem.mediacloud.model.TagCategoryDTO;
 import dev.asedem.mediacloud.model.TagDTO;
 import dev.asedem.mediacloud.service.TagService;
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,13 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tags")
+@AllArgsConstructor
 public class TagController {
 
     private final TagService tagService;
-
-    public TagController(TagService tagService) {
-        this.tagService = tagService;
-    }
 
     @PostMapping("/categories")
     public ResponseEntity<TagCategoryDTO> addCategory(@RequestParam String title) {

@@ -2,25 +2,43 @@ package dev.asedem.mediacloud.model;
 
 import dev.asedem.mediacloud.database.entity.Image;
 
+import java.util.Comparator;
+import java.util.List;
+
 public record ImageDTO(
         Integer id,
         String title,
         String uploadPath,
-        String thumbnailPath) {
+        String thumbnailPath,
+        List<TagDTO> tags) {
 
     public ImageDTO(Image image) {
         this(
                 image.getId(),
                 image.getTitle(),
                 image.getUploadPath(),
-                image.getThumbnailPath());
+                image.getThumbnailPath(),
+                image.getTags() == null ? List.of()
+                        : image.getTags().stream()
+                                .map(TagDTO::new)
+                                .sorted(Comparator.comparing(TagDTO::color))
+                                .sorted(Comparator.comparing(TagDTO::id))
+                                .toList());
     }
 
     public Image toEntity() {
-        return new Image(
-                this.id,
-                this.title,
-                this.uploadPath,
-                this.thumbnailPath);
+        Image image = new Image();
+        image.setId(this.id);
+        image.setTitle(this.title);
+        image.setUploadPath(this.uploadPath);
+        image.setThumbnailPath(this.thumbnailPath);
+
+        if (this.tags != null) {
+            this.tags.forEach(tagDto -> {
+                image.addTag(tagDto.toEntity());
+            });
+        }
+
+        return image;
     }
 }

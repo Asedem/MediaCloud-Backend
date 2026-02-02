@@ -17,11 +17,11 @@ public record TagDTO(
     }
 
     public Tag toEntity() {
-        return new Tag(
-                this.id,
-                this.title,
-                this.description,
-                this.color,
-                null);
+        Tag tag = new Tag();
+        tag.setId(this.id);
+        tag.setTitle(this.title);
+        tag.setDescription(this.description);
+        tag.setColor(this.color);
+        return tag;
     }
 }

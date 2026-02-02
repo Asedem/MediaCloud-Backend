@@ -13,9 +13,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "TagCategories")
+@Getter
+@Setter
+@NoArgsConstructor
 public class TagCategory {
 
     @Id
@@ -30,9 +36,6 @@ public class TagCategory {
     @JsonManagedReference
     private List<Tag> tags;
 
-    public TagCategory() {
-    }
-
     public TagCategory(Integer id, String title, List<Tag> tags) {
         this.id = id;
         this.title = title;
@@ -41,30 +44,6 @@ public class TagCategory {
 
     public TagCategory(String title, List<Tag> tags) {
         this.title = title;
-        this.tags = tags;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public List<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 

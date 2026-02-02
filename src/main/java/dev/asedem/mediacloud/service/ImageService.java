@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import dev.asedem.mediacloud.database.entity.Image;
 import dev.asedem.mediacloud.database.repository.ImageRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class ImageService {
@@ -31,11 +32,13 @@ public class ImageService {
     private static final String KEY = "e8519eb540c73be13b8d91439089f6c152ecf23f477cbd1dd4a5c4a838e37188";
 
     private final ImageRepository imageRepository;
+    private final TagService tagService;
 
-    public ImageService(ImageRepository imageRepository) {
+    public ImageService(ImageRepository imageRepository, TagService tagService) {
         new File(UPLOAD_DIR).mkdirs();
         new File(THUMB_DIR).mkdirs();
         this.imageRepository = imageRepository;
+        this.tagService = tagService;
     }
 
     public Image uploadImage(String title, MultipartFile file) throws Exception {
@@ -77,6 +80,16 @@ public class ImageService {
         } catch (IOException e) {
             throw new RuntimeException("Could not delete physical files", e);
         }
+    }
+
+    @Transactional
+    public Image addTags(Integer id, List<Integer> tagIds) {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+        tagIds.stream()
+                .map(this.tagService::getTagById)
+                .forEach(image::addTag);
+        return this.imageRepository.save(image);
     }
 
     private String saveEncryptedFile(byte[] data, String directory, String uuid) throws Exception {

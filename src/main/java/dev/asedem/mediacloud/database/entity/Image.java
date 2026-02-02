@@ -1,14 +1,26 @@
 package dev.asedem.mediacloud.database.entity;
 
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "Images")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Image {
 
     @Id
@@ -25,8 +37,9 @@ public class Image {
     @Column(name = "thumbnail_path", nullable = false)
     private String thumbnailPath;
 
-    public Image() {
-    }
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "image_tags", joinColumns = @JoinColumn(name = "image_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags;
 
     public Image(Integer id, String title, String uploadPath, String thumbnailPath) {
         this.id = id;
@@ -41,35 +54,8 @@ public class Image {
         this.thumbnailPath = thumbnailPath;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getUploadPath() {
-        return uploadPath;
-    }
-
-    public void setUploadPath(String uploadPath) {
-        this.uploadPath = uploadPath;
-    }
-
-    public String getThumbnailPath() {
-        return thumbnailPath;
-    }
-
-    public void setThumbnailPath(String thumbnailPath) {
-        this.thumbnailPath = thumbnailPath;
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+        tag.getImages().add(this);
     }
 }

@@ -9,17 +9,14 @@ import dev.asedem.mediacloud.database.entity.Tag;
 import dev.asedem.mediacloud.database.entity.TagCategory;
 import dev.asedem.mediacloud.database.repository.TagCategoryRepository;
 import dev.asedem.mediacloud.database.repository.TagRepository;
+import lombok.AllArgsConstructor;
 
 @Service
+@AllArgsConstructor
 public class TagService {
 
     public final TagRepository tagRepository;
     public final TagCategoryRepository tagCategoryRepository;
-
-    public TagService(TagRepository tagRepository, TagCategoryRepository tagCategoryRepository) {
-        this.tagRepository = tagRepository;
-        this.tagCategoryRepository = tagCategoryRepository;
-    }
 
     public TagCategory addCategory(String title) {
         TagCategory category = new TagCategory(title, new ArrayList<>());
@@ -34,6 +31,11 @@ public class TagService {
         category.addTag(tag);
 
         return this.tagRepository.save(tag);
+    }
+
+    public Tag getTagById(Integer id) {
+        return this.tagRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tag not found"));
     }
 
     public List<TagCategory> getAllCategories() {
