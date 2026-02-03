@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.awt.Graphics2D;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sksamuel.scrimage.ImmutableImage;
 
 import dev.asedem.mediacloud.database.entity.Image;
+import dev.asedem.mediacloud.database.entity.Tag;
 import dev.asedem.mediacloud.database.repository.ImageRepository;
 import jakarta.transaction.Transactional;
 
@@ -56,6 +58,10 @@ public class ImageService {
 
     public List<Image> getAllImages() {
         return this.imageRepository.findAll();
+    }
+
+    public List<Image> getFilteredImages(List<Tag> tags) {
+        return this.imageRepository.findImagesByAnyTag(new HashSet<>(tags));
     }
 
     public byte[] getImageData(Integer id) throws Exception {
