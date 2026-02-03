@@ -19,6 +19,8 @@ import javax.imageio.ImageIO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sksamuel.scrimage.ImmutableImage;
+
 import dev.asedem.mediacloud.database.entity.Image;
 import dev.asedem.mediacloud.database.repository.ImageRepository;
 import jakarta.transaction.Transactional;
@@ -104,27 +106,10 @@ public class ImageService {
     }
 
     private String saveEncryptedThumbnail(byte[] originalData, String uuid) throws Exception {
-        BufferedImage img = ImageIO.read(new ByteArrayInputStream(originalData));
-
-        int width = img.getWidth();
-        int height = img.getHeight();
-        double scale = Math.min(350.0 / width, 350.0 / height);
-        if (scale > 1.0)
-            scale = 1.0;
-
-        int targetWidth = (int) (width * scale);
-        int targetHeight = (int) (height * scale);
-
-        BufferedImage thumb = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = thumb.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(img, 0, 0, targetWidth, targetHeight, null);
-        g.dispose();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(thumb, "jpg", baos);
-
-        return saveEncryptedFile(baos.toByteArray(), THUMB_DIR, uuid);
+        ImmutableImage img = ImmutableImage.loader().fromBytes(originalData);
+        byte[] thumbBytes = img.max(350, 350)
+                .bytes(com.sksamuel.scrimage.nio.JpegWriter.Default);
+        return saveEncryptedFile(thumbBytes, THUMB_DIR, uuid);
     }
 
     private byte[] loadDecryptedFile(String path) throws Exception {

@@ -21,8 +21,8 @@ public record ImageDTO(
                 image.getTags() == null ? List.of()
                         : image.getTags().stream()
                                 .map(TagDTO::new)
-                                .sorted(Comparator.comparing(TagDTO::color))
                                 .sorted(Comparator.comparing(TagDTO::id))
+                                .sorted(Comparator.comparing(TagDTO::color))
                                 .toList());
     }
 
