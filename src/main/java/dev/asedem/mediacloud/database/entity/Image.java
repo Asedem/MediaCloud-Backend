@@ -31,27 +31,22 @@ public class Image {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "upload_path", nullable = false)
-    private String uploadPath;
-
-    @Column(name = "thumbnail_path", nullable = false)
-    private String thumbnailPath;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "image_tags", joinColumns = @JoinColumn(name = "image_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags;
 
-    public Image(Integer id, String title, String uploadPath, String thumbnailPath) {
+    public Image(Integer id, String title, String name) {
         this.id = id;
         this.title = title;
-        this.uploadPath = uploadPath;
-        this.thumbnailPath = thumbnailPath;
+        this.name = name;
     }
 
-    public Image(String title, String uploadPath, String thumbnailPath) {
+    public Image(String title, String name) {
         this.title = title;
-        this.uploadPath = uploadPath;
-        this.thumbnailPath = thumbnailPath;
+        this.name = name;
     }
 
     public void addTag(Tag tag) {

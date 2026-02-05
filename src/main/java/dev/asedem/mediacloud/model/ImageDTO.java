@@ -5,19 +5,19 @@ import dev.asedem.mediacloud.database.entity.Image;
 import java.util.Comparator;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record ImageDTO(
         Integer id,
         String title,
-        String uploadPath,
-        String thumbnailPath,
+        @JsonIgnore String name,
         List<TagDTO> tags) {
 
     public ImageDTO(Image image) {
         this(
                 image.getId(),
                 image.getTitle(),
-                image.getUploadPath(),
-                image.getThumbnailPath(),
+                image.getName(),
                 image.getTags() == null ? List.of()
                         : image.getTags().stream()
                                 .map(TagDTO::new)
@@ -30,8 +30,7 @@ public record ImageDTO(
         Image image = new Image();
         image.setId(this.id);
         image.setTitle(this.title);
-        image.setUploadPath(this.uploadPath);
-        image.setThumbnailPath(this.thumbnailPath);
+        image.setName(this.name);
 
         if (this.tags != null) {
             this.tags.forEach(tagDto -> {
