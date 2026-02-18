@@ -12,6 +12,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sksamuel.scrimage.ImmutableImage;
@@ -40,8 +41,23 @@ public class ImageService {
     }
 
     public Image uploadImage(String title, MultipartFile file) throws Exception {
-        String uuid = UUID.randomUUID().toString();
         byte[] fileBytes = file.getBytes();
+        return processAndSaveImage(title, fileBytes);
+    }
+
+    public Image uploadImageFromUrl(String title, String imageUrl) throws Exception {
+        byte[] imageBytes = new RestTemplate()
+                .getForObject(imageUrl, byte[].class);
+
+        if (imageBytes == null) {
+            throw new RuntimeException("Could not download image from the provided source");
+        }
+
+        return this.processAndSaveImage(title, imageBytes);
+    }
+
+    private Image processAndSaveImage(String title, byte[] fileBytes) throws Exception {
+        String uuid = UUID.randomUUID().toString();
 
         this.saveEncryptedFile(fileBytes, UPLOAD_DIR, uuid);
         this.saveEncryptedThumbnail(fileBytes, uuid);

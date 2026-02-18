@@ -24,6 +24,13 @@ public class ImageController {
         return ResponseEntity.ok(new ImageDTO(this.imageService.uploadImage(title, file)));
     }
 
+    @PostMapping("/upload-remote")
+    public ResponseEntity<ImageDTO> uploadRemoteImage(
+            @RequestParam String title,
+            @RequestParam String sourceUrl) throws Exception {
+        return ResponseEntity.ok(new ImageDTO(this.imageService.uploadImageFromUrl(title, sourceUrl)));
+    }
+
     @GetMapping
     public ResponseEntity<List<ImageDTO>> getAllImages() {
         return ResponseEntity.ok(this.imageService
