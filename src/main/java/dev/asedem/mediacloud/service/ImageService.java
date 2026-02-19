@@ -4,9 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -70,8 +71,13 @@ public class ImageService {
         return this.imageRepository.findAll();
     }
 
-    public List<Image> getFilteredImages(List<Tag> tags) {
-        return this.imageRepository.findImagesByAnyTag(new HashSet<>(tags));
+    public List<Image> getFilteredImages(List<Tag> tags, String title) {
+        Set<Integer> tagIds = (tags != null && !tags.isEmpty())
+                ? tags.stream().map(Tag::getId).collect(Collectors.toSet())
+                : null;
+        String titleFilter = (title != null && !title.isBlank()) ? title : null;
+
+        return this.imageRepository.findImagesByTagsAndTitle(tagIds, titleFilter);
     }
 
     public byte[] getImageData(Integer id) throws Exception {

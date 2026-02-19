@@ -1,7 +1,10 @@
 package dev.asedem.mediacloud.controller;
 
+import dev.asedem.mediacloud.database.entity.Image;
+import dev.asedem.mediacloud.database.entity.Tag;
 import dev.asedem.mediacloud.model.ImageDTO;
 import dev.asedem.mediacloud.model.TagDTO;
+import dev.asedem.mediacloud.model.request.ImageFilterRequest;
 import dev.asedem.mediacloud.service.ImageService;
 import lombok.AllArgsConstructor;
 
@@ -41,14 +44,17 @@ public class ImageController {
     }
 
     @PostMapping("/filtered")
-    public ResponseEntity<List<ImageDTO>> getFilteredImages(@RequestBody List<TagDTO> tags) {
-        return ResponseEntity.ok(this.imageService.getFilteredImages(
-                tags.stream()
-                        .map(tagDTO -> tagDTO.toEntity())
-                        .toList())
-                .stream()
-                .map(ImageDTO::new)
-                .toList());
+    public ResponseEntity<List<ImageDTO>> getFilteredImages(@RequestBody ImageFilterRequest filter) {
+        List<Tag> tagEntities = (filter.tags() != null)
+                ? filter.tags().stream().map(TagDTO::toEntity).toList()
+                : null;
+
+        List<Image> images = this.imageService.getFilteredImages(tagEntities, filter.title());
+
+        return ResponseEntity.ok(
+                images.stream()
+                        .map(ImageDTO::new)
+                        .toList());
     }
 
     @GetMapping(value = "/{id}/preview", produces = MediaType.IMAGE_JPEG_VALUE)
