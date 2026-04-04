@@ -93,6 +93,25 @@ public class ImageService {
         return this.loadDecryptedFile(THUMB_DIR + image.getName() + ".enc");
     }
 
+    @Transactional
+    public Image updateImage(Integer id, String title, List<Integer> tagIds) {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        if (title != null) {
+            image.setTitle(title);
+        }
+
+        if (tagIds != null) {
+            image.getTags().clear();
+            tagIds.stream()
+                    .map(this.tagService::getTagById)
+                    .forEach(image::addTag);
+        }
+
+        return this.imageRepository.save(image);
+    }
+
     public void deleteImage(Integer id) {
         Image image = imageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Image not found"));

@@ -41,4 +41,28 @@ public class TagService {
     public List<TagCategory> getAllCategories() {
         return this.tagCategoryRepository.findAll();
     }
+
+    public TagCategory updateCategory(Integer id, String title) {
+        TagCategory category = this.tagCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        category.setTitle(title);
+        return this.tagCategoryRepository.save(category);
+    }
+
+    public Tag updateTag(Integer id, String title, String description, String color, Integer categoryId) {
+        Tag tag = this.tagRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tag not found"));
+        
+        tag.setTitle(title);
+        tag.setDescription(description);
+        tag.setColor(color);
+        
+        if (categoryId != null && !tag.getCategory().getId().equals(categoryId)) {
+            TagCategory category = this.tagCategoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            tag.setCategory(category);
+        }
+        
+        return this.tagRepository.save(tag);
+    }
 }

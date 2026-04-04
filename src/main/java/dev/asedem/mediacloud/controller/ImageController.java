@@ -5,6 +5,7 @@ import dev.asedem.mediacloud.database.entity.Tag;
 import dev.asedem.mediacloud.model.ImageDTO;
 import dev.asedem.mediacloud.model.TagDTO;
 import dev.asedem.mediacloud.model.request.ImageFilterRequest;
+import dev.asedem.mediacloud.model.request.ImageUpdateRequest;
 import dev.asedem.mediacloud.service.ImageService;
 import lombok.AllArgsConstructor;
 
@@ -20,6 +21,11 @@ import java.util.List;
 public class ImageController {
 
     private final ImageService imageService;
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ImageDTO> updateImage(@PathVariable Integer id, @RequestBody ImageUpdateRequest request) {
+        return ResponseEntity.ok(new ImageDTO(this.imageService.updateImage(id, request.title(), request.tagIds())));
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<ImageDTO> uploadImage(@RequestParam String title,

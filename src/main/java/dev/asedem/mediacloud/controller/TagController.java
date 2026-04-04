@@ -22,6 +22,11 @@ public class TagController {
         return ResponseEntity.ok(new TagCategoryDTO(this.tagService.addCategory(title)));
     }
 
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<TagCategoryDTO> updateCategory(@PathVariable Integer id, @RequestParam String title) {
+        return ResponseEntity.ok(new TagCategoryDTO(this.tagService.updateCategory(id, title)));
+    }
+
     @PostMapping
     public ResponseEntity<TagDTO> addTag(
             @RequestParam String title,
@@ -29,6 +34,16 @@ public class TagController {
             @RequestParam String color,
             @RequestParam Integer categoryId) {
         return ResponseEntity.ok(new TagDTO(this.tagService.addTag(title, description, color, categoryId)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TagDTO> updateTag(
+            @PathVariable Integer id,
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam String color,
+            @RequestParam Integer categoryId) {
+        return ResponseEntity.ok(new TagDTO(this.tagService.updateTag(id, title, description, color, categoryId)));
     }
 
     @GetMapping("/categories")
