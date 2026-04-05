@@ -136,6 +136,8 @@ public class ImageService {
             jpql.append("ORDER BY sv_sort.value ").append("desc".equalsIgnoreCase(sortDirection) ? "DESC" : "ASC");
         } else if ("title".equalsIgnoreCase(sortBy)) {
             jpql.append("ORDER BY i.title ").append("desc".equalsIgnoreCase(sortDirection) ? "DESC" : "ASC");
+        } else if ("oldest".equalsIgnoreCase(sortBy)) {
+            jpql.append("ORDER BY i.id ASC");
         } else {
             jpql.append("ORDER BY i.id DESC"); 
         }
