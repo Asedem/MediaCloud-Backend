@@ -11,7 +11,8 @@ public record ImageDTO(
         Integer id,
         String title,
         @JsonIgnore String name,
-        List<TagDTO> tags) {
+        List<TagDTO> tags,
+        List<ImageStaticTagValueDTO> staticTagValues) {
 
     public ImageDTO(Image image) {
         this(
@@ -23,6 +24,10 @@ public record ImageDTO(
                                 .map(TagDTO::new)
                                 .sorted(Comparator.comparing(TagDTO::id))
                                 .sorted(Comparator.comparing(TagDTO::color))
+                                .toList(),
+                image.getStaticTagValues() == null ? List.of()
+                        : image.getStaticTagValues().stream()
+                                .map(ImageStaticTagValueDTO::new)
                                 .toList());
     }
 

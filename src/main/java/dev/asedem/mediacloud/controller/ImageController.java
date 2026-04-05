@@ -24,7 +24,7 @@ public class ImageController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ImageDTO> updateImage(@PathVariable Integer id, @RequestBody ImageUpdateRequest request) {
-        return ResponseEntity.ok(new ImageDTO(this.imageService.updateImage(id, request.title(), request.tagIds())));
+        return ResponseEntity.ok(new ImageDTO(this.imageService.updateImage(id, request.title(), request.tagIds(), request.staticTagValues())));
     }
 
     @PostMapping("/upload")

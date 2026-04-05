@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,8 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sksamuel.scrimage.ImmutableImage;
 
 import dev.asedem.mediacloud.database.entity.Image;
+import dev.asedem.mediacloud.database.entity.StaticTagDefinition;
+import dev.asedem.mediacloud.database.entity.ImageStaticTagValue;
 import dev.asedem.mediacloud.database.entity.Tag;
 import dev.asedem.mediacloud.database.repository.ImageRepository;
+import dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -33,12 +37,16 @@ public class ImageService {
 
     private final ImageRepository imageRepository;
     private final TagService tagService;
+    private final StaticTagService staticTagService;
+    private final dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository imageStaticTagValueRepository;
 
-    public ImageService(ImageRepository imageRepository, TagService tagService) {
+    public ImageService(ImageRepository imageRepository, TagService tagService, StaticTagService staticTagService, dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository imageStaticTagValueRepository) {
         new File(UPLOAD_DIR).mkdirs();
         new File(THUMB_DIR).mkdirs();
         this.imageRepository = imageRepository;
         this.tagService = tagService;
+        this.staticTagService = staticTagService;
+        this.imageStaticTagValueRepository = imageStaticTagValueRepository;
     }
 
     public Image uploadImage(String title, MultipartFile file) throws Exception {
@@ -94,7 +102,7 @@ public class ImageService {
     }
 
     @Transactional
-    public Image updateImage(Integer id, String title, List<Integer> tagIds) {
+    public Image updateImage(Integer id, String title, List<Integer> tagIds, java.util.Map<Integer, Double> staticTagValues) {
         Image image = imageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Image not found"));
 
@@ -107,6 +115,14 @@ public class ImageService {
             tagIds.stream()
                     .map(this.tagService::getTagById)
                     .forEach(image::addTag);
+        }
+
+        if (staticTagValues != null) {
+            this.imageStaticTagValueRepository.deleteAllByImageId(id);
+            staticTagValues.forEach((defId, value) -> {
+                dev.asedem.mediacloud.database.entity.StaticTagDefinition definition = this.staticTagService.getDefinition(defId);
+                this.imageStaticTagValueRepository.save(new dev.asedem.mediacloud.database.entity.ImageStaticTagValue(image, definition, value));
+            });
         }
 
         return this.imageRepository.save(image);

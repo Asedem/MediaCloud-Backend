@@ -36,7 +36,10 @@ public class Image {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "image_tags", joinColumns = @JoinColumn(name = "image_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private Set<Tag> tags;
+    private Set<Tag> tags = new java.util.HashSet<>();
+
+    @jakarta.persistence.OneToMany(mappedBy = "image", fetch = FetchType.LAZY, cascade = jakarta.persistence.CascadeType.ALL)
+    private java.util.List<ImageStaticTagValue> staticTagValues = new java.util.ArrayList<>();
 
     public Image(Integer id, String title, String name) {
         this.id = id;
