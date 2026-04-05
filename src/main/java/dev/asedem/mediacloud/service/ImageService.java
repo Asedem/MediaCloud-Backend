@@ -79,17 +79,40 @@ public class ImageService {
         return this.imageRepository.findAll();
     }
 
-    public List<Image> getFilteredImages(List<Tag> tags, String title, String filterMode) {
+    public List<Image> getFilteredImages(List<Tag> tags, String title, String filterMode, java.util.Map<Integer, dev.asedem.mediacloud.model.RangeFilterDTO> staticTagFilters) {
         Set<Integer> tagIds = (tags != null && !tags.isEmpty())
                 ? tags.stream().map(Tag::getId).collect(Collectors.toSet())
                 : null;
         String titleFilter = (title != null && !title.isBlank()) ? title : null;
 
+        List<Image> initialResults;
         if ("exact".equalsIgnoreCase(filterMode) && tagIds != null && !tagIds.isEmpty()) {
-            return this.imageRepository.findImagesByAllTagsAndTitle(tagIds, titleFilter, tagIds.size());
+            initialResults = this.imageRepository.findImagesByAllTagsAndTitle(tagIds, titleFilter, tagIds.size());
+        } else {
+            initialResults = this.imageRepository.findImagesByTagsAndTitle(tagIds, titleFilter);
         }
 
-        return this.imageRepository.findImagesByTagsAndTitle(tagIds, titleFilter);
+        if (staticTagFilters == null || staticTagFilters.isEmpty()) {
+            return initialResults;
+        }
+
+        return initialResults.stream().filter(image -> {
+            for (java.util.Map.Entry<Integer, dev.asedem.mediacloud.model.RangeFilterDTO> entry : staticTagFilters.entrySet()) {
+                Integer defId = entry.getKey();
+                dev.asedem.mediacloud.model.RangeFilterDTO filter = entry.getValue();
+
+                dev.asedem.mediacloud.database.entity.ImageStaticTagValue valueObj = image.getStaticTagValues().stream()
+                        .filter(v -> v.getStaticTagDefinition().getId().equals(defId))
+                        .findFirst()
+                        .orElse(null);
+
+                double value = (valueObj != null) ? valueObj.getValue() : 0.0;
+
+                if (filter.min() != null && value < filter.min()) return false;
+                if (filter.max() != null && value > filter.max()) return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
     }
 
     public byte[] getImageData(Integer id) throws Exception {

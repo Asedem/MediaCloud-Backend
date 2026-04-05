@@ -55,7 +55,7 @@ public class ImageController {
                 ? filter.tags().stream().map(TagDTO::toEntity).toList()
                 : null;
 
-        List<Image> images = this.imageService.getFilteredImages(tagEntities, filter.title(), filter.filterMode());
+        List<Image> images = this.imageService.getFilteredImages(tagEntities, filter.title(), filter.filterMode(), filter.staticTagFilters());
 
         return ResponseEntity.ok(
                 images.stream()
