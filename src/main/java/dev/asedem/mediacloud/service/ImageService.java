@@ -79,11 +79,15 @@ public class ImageService {
         return this.imageRepository.findAll();
     }
 
-    public List<Image> getFilteredImages(List<Tag> tags, String title) {
+    public List<Image> getFilteredImages(List<Tag> tags, String title, String filterMode) {
         Set<Integer> tagIds = (tags != null && !tags.isEmpty())
                 ? tags.stream().map(Tag::getId).collect(Collectors.toSet())
                 : null;
         String titleFilter = (title != null && !title.isBlank()) ? title : null;
+
+        if ("exact".equalsIgnoreCase(filterMode) && tagIds != null && !tagIds.isEmpty()) {
+            return this.imageRepository.findImagesByAllTagsAndTitle(tagIds, titleFilter, tagIds.size());
+        }
 
         return this.imageRepository.findImagesByTagsAndTitle(tagIds, titleFilter);
     }

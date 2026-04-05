@@ -17,4 +17,15 @@ public interface ImageRepository extends JpaRepository<Image, Integer> {
     List<Image> findImagesByTagsAndTitle(
             @Param("tagIds") Set<Integer> tagIds,
             @Param("title") String title);
+
+    @Query("SELECT i FROM Image i " +
+            "JOIN i.tags t " +
+            "WHERE (t.id IN :tagIds) " +
+            "AND (cast(:title as String) IS NULL OR LOWER(i.title) LIKE LOWER(CONCAT('%', cast(:title as String), '%'))) " +
+            "GROUP BY i.id " +
+            "HAVING COUNT(DISTINCT t.id) = cast(:tagCount as long)")
+    List<Image> findImagesByAllTagsAndTitle(
+            @Param("tagIds") Set<Integer> tagIds,
+            @Param("title") String title,
+            @Param("tagCount") Integer tagCount);
 }

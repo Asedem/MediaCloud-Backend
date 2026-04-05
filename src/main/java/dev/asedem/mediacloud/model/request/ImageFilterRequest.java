@@ -6,5 +6,6 @@ import dev.asedem.mediacloud.model.TagDTO;
 
 public record ImageFilterRequest(
         List<TagDTO> tags,
-        String title) {
+        String title,
+        String filterMode) {
 }
