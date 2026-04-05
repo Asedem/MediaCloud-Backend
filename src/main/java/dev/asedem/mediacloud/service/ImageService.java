@@ -39,14 +39,16 @@ public class ImageService {
     private final TagService tagService;
     private final StaticTagService staticTagService;
     private final dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository imageStaticTagValueRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 
-    public ImageService(ImageRepository imageRepository, TagService tagService, StaticTagService staticTagService, dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository imageStaticTagValueRepository) {
+    public ImageService(ImageRepository imageRepository, TagService tagService, StaticTagService staticTagService, dev.asedem.mediacloud.database.repository.ImageStaticTagValueRepository imageStaticTagValueRepository, jakarta.persistence.EntityManager entityManager) {
         new File(UPLOAD_DIR).mkdirs();
         new File(THUMB_DIR).mkdirs();
         this.imageRepository = imageRepository;
         this.tagService = tagService;
         this.staticTagService = staticTagService;
         this.imageStaticTagValueRepository = imageStaticTagValueRepository;
+        this.entityManager = entityManager;
     }
 
     public Image uploadImage(String title, MultipartFile file) throws Exception {
@@ -79,40 +81,101 @@ public class ImageService {
         return this.imageRepository.findAll();
     }
 
-    public List<Image> getFilteredImages(List<Tag> tags, String title, String filterMode, java.util.Map<Integer, dev.asedem.mediacloud.model.RangeFilterDTO> staticTagFilters) {
-        Set<Integer> tagIds = (tags != null && !tags.isEmpty())
-                ? tags.stream().map(Tag::getId).collect(Collectors.toSet())
-                : null;
-        String titleFilter = (title != null && !title.isBlank()) ? title : null;
-
-        List<Image> initialResults;
-        if ("exact".equalsIgnoreCase(filterMode) && tagIds != null && !tagIds.isEmpty()) {
-            initialResults = this.imageRepository.findImagesByAllTagsAndTitle(tagIds, titleFilter, tagIds.size());
-        } else {
-            initialResults = this.imageRepository.findImagesByTagsAndTitle(tagIds, titleFilter);
+    public List<Image> getFilteredImages(List<Tag> tags, String title, String filterMode, Map<Integer, dev.asedem.mediacloud.model.RangeFilterDTO> staticTagFilters, int page, int size, String sortBy, String sortDirection) {
+        StringBuilder jpql = new StringBuilder("SELECT i FROM Image i ");
+        boolean exactMode = "exact".equalsIgnoreCase(filterMode) && tags != null && !tags.isEmpty();
+        
+        if (tags != null && !tags.isEmpty()) {
+            jpql.append("JOIN i.tags t ");
         }
 
-        if (staticTagFilters == null || staticTagFilters.isEmpty()) {
-            return initialResults;
+        boolean sortIsStatic = sortBy != null && sortBy.startsWith("static_");
+        if (sortIsStatic) {
+            jpql.append("LEFT JOIN i.staticTagValues sv_sort ON sv_sort.staticTagDefinition.id = :sortDefId ");
         }
 
-        return initialResults.stream().filter(image -> {
-            for (java.util.Map.Entry<Integer, dev.asedem.mediacloud.model.RangeFilterDTO> entry : staticTagFilters.entrySet()) {
-                Integer defId = entry.getKey();
-                dev.asedem.mediacloud.model.RangeFilterDTO filter = entry.getValue();
+        jpql.append("WHERE 1=1 ");
 
-                dev.asedem.mediacloud.database.entity.ImageStaticTagValue valueObj = image.getStaticTagValues().stream()
-                        .filter(v -> v.getStaticTagDefinition().getId().equals(defId))
-                        .findFirst()
-                        .orElse(null);
+        if (title != null && !title.isBlank()) {
+            jpql.append("AND LOWER(i.title) LIKE LOWER(:title) ");
+        }
 
-                double value = (valueObj != null) ? valueObj.getValue() : 0.0;
+        if (tags != null && !tags.isEmpty()) {
+            jpql.append("AND t.id IN :tagIds ");
+        }
 
-                if (filter.min() != null && value < filter.min()) return false;
-                if (filter.max() != null && value > filter.max()) return false;
+        if (staticTagFilters != null && !staticTagFilters.isEmpty()) {
+            int filterIdx = 0;
+            for (Integer defId : staticTagFilters.keySet()) {
+                jpql.append("AND EXISTS (SELECT 1 FROM ImageStaticTagValue sv_f").append(filterIdx)
+                    .append(" WHERE sv_f").append(filterIdx).append(".image = i")
+                    .append(" AND sv_f").append(filterIdx).append(".staticTagDefinition.id = :defId_").append(filterIdx);
+                
+                dev.asedem.mediacloud.model.RangeFilterDTO filter = staticTagFilters.get(defId);
+                if (filter.min() != null) {
+                    jpql.append(" AND sv_f").append(filterIdx).append(".value >= :min_").append(filterIdx);
+                }
+                if (filter.max() != null) {
+                    jpql.append(" AND sv_f").append(filterIdx).append(".value <= :max_").append(filterIdx);
+                }
+                jpql.append(") ");
+                filterIdx++;
             }
-            return true;
-        }).collect(Collectors.toList());
+        }
+
+        if (exactMode) {
+            jpql.append("GROUP BY i.id ");
+            jpql.append("HAVING COUNT(DISTINCT t.id) = :tagCount ");
+        } else {
+            jpql.append("GROUP BY i.id "); 
+        }
+
+        if ("random".equalsIgnoreCase(sortBy)) {
+            jpql.append("ORDER BY RANDOM() ");
+        } else if (sortIsStatic) {
+            jpql.append("ORDER BY sv_sort.value ").append("desc".equalsIgnoreCase(sortDirection) ? "DESC" : "ASC");
+        } else if ("title".equalsIgnoreCase(sortBy)) {
+            jpql.append("ORDER BY i.title ").append("desc".equalsIgnoreCase(sortDirection) ? "DESC" : "ASC");
+        } else {
+            jpql.append("ORDER BY i.id DESC"); 
+        }
+
+        jakarta.persistence.TypedQuery<Image> query = entityManager.createQuery(jpql.toString(), Image.class);
+
+        if (title != null && !title.isBlank()) {
+            query.setParameter("title", "%" + title.trim() + "%");
+        }
+
+        if (tags != null && !tags.isEmpty()) {
+            query.setParameter("tagIds", tags.stream().map(Tag::getId).collect(Collectors.toSet()));
+        }
+
+        if (exactMode) {
+            query.setParameter("tagCount", (long) tags.size());
+        }
+
+        if (sortIsStatic) {
+            query.setParameter("sortDefId", Integer.parseInt(sortBy.substring(7)));
+        }
+
+        if (staticTagFilters != null && !staticTagFilters.isEmpty()) {
+            int filterIdx = 0;
+            for (Integer defId : staticTagFilters.keySet()) {
+                query.setParameter("defId_" + filterIdx, defId);
+                dev.asedem.mediacloud.model.RangeFilterDTO filter = staticTagFilters.get(defId);
+                if (filter.min() != null) {
+                    query.setParameter("min_" + filterIdx, filter.min());
+                }
+                if (filter.max() != null) {
+                    query.setParameter("max_" + filterIdx, filter.max());
+                }
+                filterIdx++;
+            }
+        }
+
+        return query.setFirstResult(page * size)
+                    .setMaxResults(size)
+                    .getResultList();
     }
 
     public byte[] getImageData(Integer id) throws Exception {

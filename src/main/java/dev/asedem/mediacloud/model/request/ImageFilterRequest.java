@@ -10,5 +10,9 @@ public record ImageFilterRequest(
         List<TagDTO> tags,
         String title,
         String filterMode,
-        Map<Integer, RangeFilterDTO> staticTagFilters) {
+        Map<Integer, RangeFilterDTO> staticTagFilters,
+        int page,
+        int size,
+        String sortBy,
+        String sortDirection) {
 }
