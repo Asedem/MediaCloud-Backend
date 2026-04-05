@@ -65,4 +65,23 @@ public class TagService {
         
         return this.tagRepository.save(tag);
     }
+
+    public void deleteTag(Integer id) {
+        Tag tag = this.tagRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tag not found"));
+        
+        // Remove tag from all images before deleting
+        if (tag.getImages() != null) {
+            tag.getImages().forEach(image -> image.getTags().remove(tag));
+        }
+        
+        this.tagRepository.delete(tag);
+    }
+
+    public void deleteCategory(Integer id) {
+        TagCategory category = this.tagCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        
+        this.tagCategoryRepository.delete(category);
+    }
 }

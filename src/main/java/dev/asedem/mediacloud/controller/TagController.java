@@ -54,4 +54,16 @@ public class TagController {
                 .map(TagCategoryDTO::new)
                 .toList());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTag(@PathVariable Integer id) {
+        this.tagService.deleteTag(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
+        this.tagService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
 }
